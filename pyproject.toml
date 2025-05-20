@@ -1,0 +1,79 @@
+[project]
+name = "application"
+version = "0.1.0"
+dependencies = [
+  "GeoAlchemy2==0.17.1",
+  "alembic==1.15.2",
+  "based[postgres]==0.7.0",
+  "fastapi==0.115.12",
+  "orjson==3.10.18",
+  "pydantic-settings==2.9.1",
+  "SQLAlchemy==2.0.41",
+  "uvicorn==0.34.2",
+  "uvloop==0.21.0",
+]
+
+[project.optional-dependencies]
+dev = [
+  "SQLAlchemy-Utils==0.41.2",
+  "httpx==0.28.1",
+  "pytest-asyncio==0.26.0",
+  "pytest-cov==6.1.1",
+  "pytest-freezegun@git+https://github.com/oizik/pytest-freezegun.git",
+  "pytest-mock==3.14.0",
+  "pytest-xdist==3.6.1",
+  "pytest==8.3.5",
+  "ruff==0.11.10",
+]
+
+[tool.pytest.ini_options]
+addopts = ["-n 4"]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+
+[tool.coverage.run]
+omit = ["application/migrations/*"]
+
+[tool.ruff]
+line-length = 80
+
+[tool.ruff.lint]
+select = [
+  "A",
+  "B",
+  "C4",
+  "C90",
+  "COM",
+  "DTZ",
+  "E",
+  "F",
+  "I",
+  "ISC",
+  "N",
+  "PIE",
+  "PLC",
+  "PLE",
+  "PLR",
+  "PLW",
+  "PT",
+  "Q",
+  "RET",
+  "RSE",
+  "RUF",
+  "SIM",
+  "T20",
+  "UP",
+  "W",
+]
+ignore = ["PLR0913"]
+
+[tool.ruff.lint.per-file-ignores]
+"**/__init__.py" = ["F401"]
+"application/web/api/*.py" = ["B008"]
+"application/web/controllers/*.py" = ["B904"]
+"application/web/dependencies.py" = ["B008", "B904"]
+"tests/**/*.py" = ["PLR2004"]
+
+[tool.ruff.lint.isort]
+force-single-line = true

@@ -1,0 +1,16 @@
+.*
+
+.venv
+*.egg-info
+
+coverage.xml
+htmlcov
+
+.coverage
+.pytest_cache
+
+.ruff_cache
+
+__pycache__
+
+!.gitignore
