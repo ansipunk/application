@@ -2,12 +2,13 @@
 name = "application"
 version = "0.1.0"
 dependencies = [
-  "GeoAlchemy2==0.17.1",
   "alembic==1.15.2",
   "based[postgres]==0.7.0",
   "fastapi==0.115.12",
+  "GeoAlchemy2==0.17.1",
   "orjson==3.10.18",
   "pydantic-settings==2.9.1",
+  "shapely==2.1.1",
   "SQLAlchemy==2.0.41",
   "uvicorn==0.34.2",
   "uvloop==0.21.0",
@@ -66,14 +67,14 @@ select = [
   "UP",
   "W",
 ]
-ignore = ["PLR0913"]
+ignore = ["PLR0913", "N818"]
 
 [tool.ruff.lint.per-file-ignores]
 "**/__init__.py" = ["F401"]
 "application/web/api/*.py" = ["B008"]
 "application/web/controllers/*.py" = ["B904"]
 "application/web/dependencies.py" = ["B008", "B904"]
-"tests/**/*.py" = ["PLR2004"]
+"tests/**/*.py" = ["PLR2004", "RUF001"]
 
 [tool.ruff.lint.isort]
 force-single-line = true
