@@ -153,7 +153,7 @@ async def organization_get_by_id(session: based.Session, organization_id: int):
     return organization
 
 
-async def organization_get(session):
+async def organization_get(session: based.Session):
     query = _get_organization_query()
     return await session.fetch_all(query)
 
@@ -168,7 +168,10 @@ async def organization_get_by_building_id(
     return await session.fetch_all(query)
 
 
-async def organization_get_by_activity_id(session, activity_id: int):
+async def organization_get_by_activity_id(
+    session: based.Session,
+    activity_id: int,
+):
     query = _get_organization_query().having(
         sqlalchemy.func.bool_or(
             OrganizationActivity.c.activity_id == activity_id,
@@ -263,7 +266,7 @@ async def organization_get_within_radius(
     return await session.fetch_all(query)
 
 
-async def organization_search(session, search_text: str):
+async def organization_search(session: based.Session, search_text: str):
     o = Organization.alias("o")
     oa = OrganizationActivity.alias("oa")
 
@@ -297,3 +300,13 @@ async def organization_search(session, search_text: str):
         del result["rank"]
         del result["similarity"]
     return results
+
+
+async def organization_delete(session: based.Session, organization_id: int):
+    query = OrganizationActivity.delete().where(
+        Organization.c.id == organization_id,
+    )
+    await session.execute(query)
+
+    query = Organization.delete().where(Organization.c.id == organization_id)
+    await session.execute(query)

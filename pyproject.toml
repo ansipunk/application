@@ -20,7 +20,6 @@ dev = [
   "httpx==0.28.1",
   "pytest-asyncio==0.26.0",
   "pytest-cov==6.1.1",
-  "pytest-freezegun@git+https://github.com/oizik/pytest-freezegun.git",
   "pytest-mock==3.14.0",
   "pytest-xdist==3.6.1",
   "pytest==8.3.5",

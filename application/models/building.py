@@ -1,6 +1,6 @@
 import based
 import geoalchemy2
-import geoalchemy2.shape
+import psycopg.errors
 import shapely
 import shapely.geometry
 import sqlalchemy
@@ -9,6 +9,10 @@ from ..core import postgres
 
 
 class BuildingDoesNotExist(Exception):
+    pass
+
+
+class BuildingHasEntities(Exception):
     pass
 
 
@@ -110,3 +114,12 @@ async def building_get_within_radius(
     )
     buildings = await session.fetch_all(query)
     return _populate_buildings_lon_lat(buildings)
+
+
+async def building_delete(session: based.Session, building_id: int):
+    query = Building.delete().where(Building.c.id == building_id)
+
+    try:
+        await session.execute(query)
+    except psycopg.errors.ForeignKeyViolation as e:
+        raise BuildingHasEntities from e

@@ -101,3 +101,31 @@ async def test_get_activities(
         activity_parts,
     ]:
         assert activity in fetched_activities
+
+
+async def test_delete_activity(postgres, activity_food):
+    await application.models.activity_delete(postgres, activity_food["id"])
+
+    with pytest.raises(application.models.ActivityDoesNotExist):
+        await application.models.activity_get_by_id(
+            postgres,
+            activity_food["id"],
+        )
+
+
+async def test_delete_activity_with_child_activities(
+    postgres,
+    activity_food,
+    activity_meat,
+):
+    with pytest.raises(application.models.ActivityHasEntities):
+        await application.models.activity_delete(postgres, activity_food["id"])
+
+
+async def test_delete_activity_with_organizations(
+    postgres,
+    activity_meat,
+    organization_moscow_a_meat,
+):
+    with pytest.raises(application.models.ActivityHasEntities):
+        await application.models.activity_delete(postgres, activity_meat["id"])

@@ -150,3 +150,25 @@ async def test_get_buildings_within_radius_no_results(
     )
 
     assert len(buildings) == 0
+
+
+async def test_delete_building(postgres, building_moscow_a):
+    await application.models.building_delete(postgres, building_moscow_a["id"])
+
+    with pytest.raises(application.models.BuildingDoesNotExist):
+        await application.models.building_get_by_id(
+            postgres,
+            building_moscow_a["id"],
+        )
+
+
+async def test_delete_building_with_organizations(
+    postgres,
+    building_moscow_a,
+    organization_moscow_a_meat,
+):
+    with pytest.raises(application.models.BuildingHasEntities):
+        await application.models.building_delete(
+            postgres,
+            building_moscow_a["id"],
+        )

@@ -1,4 +1,5 @@
 import based
+import psycopg.errors
 import sqlalchemy
 
 from ..core import postgres
@@ -9,6 +10,10 @@ class ActivityDoesNotExist(Exception):
 
 
 class ActivityNestingLimitReached(Exception):
+    pass
+
+
+class ActivityHasEntities(Exception):
     pass
 
 
@@ -40,23 +45,23 @@ async def activity_create(
 ):
     nesting_level = 1
 
-    if parent_id is not None:
-        parent = await activity_get_by_id(session, parent_id)
-        if parent["level"] >= 3:
-            raise ActivityNestingLimitReached
-        nesting_level = parent["level"] + 1
+    # This is done within a transaction to prevent a race condition
+    # where the parent activity was fetched, but got deleted before
+    # the child activity was actually created.
+    async with session.transaction():
+        if parent_id is not None:
+            parent = await activity_get_by_id(session, parent_id)
+            if parent["level"] >= 3:
+                raise ActivityNestingLimitReached
+            nesting_level = parent["level"] + 1
 
-    query = (
-        Activity.insert()
-        .values(name=name, parent_id=parent_id, level=nesting_level)
-        .returning(*Activity.c)
-    )
+        query = (
+            Activity.insert()
+            .values(name=name, parent_id=parent_id, level=nesting_level)
+            .returning(*Activity.c)
+        )
 
-    # It's very unlikely we will get a foreign key violation here, as we check
-    # presence of requested parent activity above. This race condition is almost
-    # impossible (completely impossible, if you consider that there is no method
-    # for deleting activities yet), so there is no reason to catch it.
-    return await session.fetch_one(query)
+        return await session.fetch_one(query)
 
 
 async def activity_get_by_id(session: based.Session, activity_id: int):
@@ -70,3 +75,12 @@ async def activity_get_by_id(session: based.Session, activity_id: int):
 async def activity_get(session: based.Session):
     query = Activity.select()
     return await session.fetch_all(query)
+
+
+async def activity_delete(session: based.Session, activity_id: int):
+    query = Activity.delete().where(Activity.c.id == activity_id)
+
+    try:
+        await session.execute(query)
+    except psycopg.errors.ForeignKeyViolation as e:
+        raise ActivityHasEntities from e

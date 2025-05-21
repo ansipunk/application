@@ -287,3 +287,19 @@ async def test_search_organizations(
         "ничего",
     )
     assert len(found_organizations) == 0
+
+
+async def test_delete_organization(
+    postgres,
+    organization_moscow_a_meat,
+):
+    await application.models.organization_delete(
+        postgres,
+        organization_moscow_a_meat["id"],
+    )
+
+    with pytest.raises(application.models.OrganizationDoesNotExist):
+        await application.models.organization_get_by_id(
+            postgres,
+            organization_moscow_a_meat["id"],
+        )
