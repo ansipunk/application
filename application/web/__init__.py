@@ -20,7 +20,7 @@ async def lifespan(_):
 
 app = fastapi.FastAPI(
     title="Application",
-    summary="Application",
+    summary=f"Current API Key: {config.web.api_key}",
     version="0.1.0",
     redirect_slashes=False,
     redoc_url=None,

@@ -1,10 +1,11 @@
 import fastapi
 
+from .. import dependencies
 from .activity import router as activity_router
 from .building import router as building_router
 from .organization import router as organization_router
 
-router = fastapi.APIRouter()
+router = fastapi.APIRouter(dependencies=[dependencies.auth])
 
 router.include_router(
     building_router,

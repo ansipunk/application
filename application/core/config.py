@@ -23,8 +23,7 @@ class PostgresSettings(pydantic_settings.BaseSettings):
 
 class WebSettings(pydantic_settings.BaseSettings):
     debug: bool = False
-    refresh_token_ttl: int = 60 * 60 * 24 * 7  # 7 days
-    access_token_ttl: int = 60 * 15  # 15 minutes
+    api_key: str = "000-000-000"
 
     model_config = pydantic_settings.SettingsConfigDict(
         env_prefix="application_web_",
