@@ -26,6 +26,7 @@ help:
 	@echo "  test       - run project tests"
 	@echo "  testreport - report test coverage"
 	@echo "  migrate    - create database and run migrations"
+	@echo "  populate   - populate database with test data"
 	@echo "  serve      - run project in debug mode"
 	@echo "  outdated   - show outdated pip packages"
 	@echo "  clean      - clean up development artifacts"
@@ -54,6 +55,9 @@ migrate: $(VENV)
 	psql $(PG_APPLICATION_URL) -c "CREATE EXTENSION pg_trgm;" || true
 	psql $(PG_APPLICATION_URL) -c "CREATE EXTENSION postgis;" || true
 	$(PYTHON) -m alembic upgrade head
+
+populate: $(VENV)
+	$(PYTHON) ./scripts/populate_test_data.py
 
 serve: $(VENV)
 	APPLICATION_WEB_DEBUG=1 $(PYTHON) -m uvicorn application.web:app --reload
