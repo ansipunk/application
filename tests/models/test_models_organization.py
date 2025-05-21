@@ -7,17 +7,20 @@ async def test_create_organization(postgres, building_moscow_a, activity_food):
     name = "Organization"
     building_id = building_moscow_a["id"]
     activity_ids = [activity_food["id"]]
+    phone_number = "+7 999 111 2233"
 
     created_organization = await application.models.organization_create(
         postgres,
         name=name,
         building_id=building_id,
         activity_ids=activity_ids,
+        phone_number=phone_number,
     )
 
     assert created_organization is not None
     assert created_organization["id"] is not None
     assert created_organization["name"] == name
+    assert created_organization["phone_number"] == phone_number
     assert created_organization["building_id"] == building_id
     assert created_organization["activity_ids"] == activity_ids
 
@@ -29,6 +32,7 @@ async def test_create_organization_with_nonexistent_building(
     name = "Organization"
     building_id = 0
     activity_ids = [activity_food["id"]]
+    phone_number = "+7 999 111 2233"
 
     with pytest.raises(application.models.BuildingDoesNotExist):
         await application.models.organization_create(
@@ -36,6 +40,7 @@ async def test_create_organization_with_nonexistent_building(
             name=name,
             building_id=building_id,
             activity_ids=activity_ids,
+            phone_number=phone_number,
         )
 
 
@@ -46,6 +51,7 @@ async def test_create_organization_with_nonexistent_activity(
     name = "Organization"
     building_id = building_moscow_a["id"]
     activity_ids = [0]
+    phone_number = "+7 999 111 2233"
 
     with pytest.raises(application.models.ActivityDoesNotExist):
         await application.models.organization_create(
@@ -53,6 +59,7 @@ async def test_create_organization_with_nonexistent_activity(
             name=name,
             building_id=building_id,
             activity_ids=activity_ids,
+            phone_number=phone_number,
         )
 
 
@@ -63,6 +70,7 @@ async def test_create_organization_with_no_activities(
     name = "Organization"
     building_id = building_moscow_a["id"]
     activity_ids = []
+    phone_number = "+7 999 111 2233"
 
     with pytest.raises(application.models.OrganizationActivitiesNotProvided):
         await application.models.organization_create(
@@ -70,6 +78,7 @@ async def test_create_organization_with_no_activities(
             name=name,
             building_id=building_id,
             activity_ids=activity_ids,
+            phone_number=phone_number,
         )
 
 

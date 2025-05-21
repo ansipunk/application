@@ -15,11 +15,13 @@ async def test_create_organization(
     name = "Name"
     building_id = building_moscow_a["id"]
     activity_ids = [activity_food["id"]]
+    phone_number = "+7 999 666 9999"
 
     organization = application.web.schemas.OrganizationCreate(
         name=name,
         building_id=building_id,
         activity_ids=activity_ids,
+        phone_number=phone_number,
     )
 
     model_mock = mocker.spy(application.models, "organization_create")
@@ -37,6 +39,7 @@ async def test_create_organization(
         name=name,
         building_id=building_id,
         activity_ids=activity_ids,
+        phone_number=phone_number,
     )
 
 
@@ -51,6 +54,7 @@ async def test_create_organization_without_activity_ids(
                 name="Name",
                 building_id=building_moscow_a["id"],
                 activity_ids=[],
+                phone_number="+7 999 666 9999",
             ),
         )
 
@@ -68,6 +72,7 @@ async def test_create_organization_with_nonexistent_building(
                 name="Name",
                 building_id=0,
                 activity_ids=[activity_food["id"]],
+                phone_number="+7 999 666 9999",
             ),
         )
 
@@ -85,6 +90,7 @@ async def test_create_organization_with_nonexistent_activity(
                 name="Name",
                 building_id=building_moscow_a["id"],
                 activity_ids=[0],
+                phone_number="+7 999 666 9999",
             ),
         )
 

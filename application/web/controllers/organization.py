@@ -13,6 +13,7 @@ async def organization_create(
         return await models.organization_create(
             session,
             name=organization.name,
+            phone_number=organization.phone_number,
             building_id=organization.building_id,
             activity_ids=organization.activity_ids,
         )

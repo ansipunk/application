@@ -102,10 +102,11 @@ async def activity_parts(activity, activity_passenger_cars):
 
 @pytest.fixture
 def organization(postgres):
-    async def builder(name, building_id, activity_ids):
+    async def builder(name, building_id, activity_ids, phone_number=None):
         return await application.models.organization_create(
             postgres,
             name=name,
+            phone_number=phone_number,
             building_id=building_id,
             activity_ids=activity_ids,
         )
@@ -123,6 +124,7 @@ async def organization_moscow_a_meat(
         "Только говядина",
         building_moscow_a["id"],
         [activity_meat["id"]],
+        "8 800 555 3535",
     )
 
 
@@ -137,6 +139,7 @@ async def organization_moscow_b_sausages_parts(
         "Шаурма и аккумуляторы",
         building_moscow_b["id"],
         [activity_sausages["id"], activity_parts["id"]],
+        "+7 915 111 2233",
     )
 
 
@@ -150,6 +153,7 @@ async def organization_minsk_a_passenger_cars(
         "Автосалон",
         building_minsk_a["id"],
         [activity_passenger_cars["id"]],
+        "+375 44 123 4567",
     )
 
 
@@ -163,4 +167,5 @@ async def organization_minsk_b_buses(
         "Автобусы",
         building_minsk_b["id"],
         [activity_passenger_cars["id"]],
+        "+375 33 420 1337",
     )

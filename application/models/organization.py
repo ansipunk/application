@@ -24,6 +24,7 @@ Organization = sqlalchemy.Table(
     postgres.metadata,
     sqlalchemy.Column("id", sqlalchemy.Integer, primary_key=True),
     sqlalchemy.Column("name", sqlalchemy.Text, nullable=False),
+    sqlalchemy.Column("phone_number", sqlalchemy.Text, nullable=True),
     sqlalchemy.Column(
         "building_id",
         sqlalchemy.Integer,
@@ -75,6 +76,7 @@ async def organization_create(
     session: based.Session,
     *,
     name: str,
+    phone_number: str | None,
     building_id: int,
     activity_ids: list[int],
 ):
@@ -86,10 +88,15 @@ async def organization_create(
     async with session.transaction():
         query = (
             Organization.insert()
-            .values(name=name, building_id=building_id)
+            .values(
+                name=name,
+                phone_number=phone_number,
+                building_id=building_id,
+            )
             .returning(
                 Organization.c.id,
                 Organization.c.name,
+                Organization.c.phone_number,
                 Organization.c.building_id,
             )
         )
@@ -128,6 +135,7 @@ def _get_organization_query():
         .with_only_columns(
             Organization.c.id,
             Organization.c.name,
+            Organization.c.phone_number,
             Organization.c.building_id,
             sqlalchemy.dialects.postgresql.array_agg(
                 OrganizationActivity.c.activity_id,
@@ -220,6 +228,7 @@ async def organization_get_by_nested_activities(
         sqlalchemy.select(
             o.c.id,
             o.c.name,
+            o.c.phone_number,
             o.c.building_id,
             sqlalchemy.func.array_agg(oa.c.activity_id).label("activity_ids"),
         )
@@ -248,6 +257,7 @@ async def organization_get_within_radius(
         sqlalchemy.select(
             o.c.id,
             o.c.name,
+            o.c.phone_number,
             o.c.building_id,
             sqlalchemy.func.array_agg(oa.c.activity_id).label("activity_ids"),
         )
@@ -281,6 +291,7 @@ async def organization_search(session: based.Session, search_text: str):
         sqlalchemy.select(
             o.c.id,
             o.c.name,
+            o.c.phone_number,
             o.c.building_id,
             sqlalchemy.func.array_agg(oa.c.activity_id).label("activity_ids"),
             rank.label("rank"),
