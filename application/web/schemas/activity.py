@@ -13,6 +13,7 @@ class ActivityCreate(ActivityBase):
 
 
 class ActivityGet(ActivityBase):
+    id: int
     level: int
 
 

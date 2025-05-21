@@ -45,6 +45,18 @@ async def test_create_activity_with_nesting_limit_reached(
     assert e.value.status_code == 400
 
 
+async def test_create_activity_with_nonexistent_parent_activity(postgres):
+    activity = application.web.schemas.ActivityCreate(
+        name="Name",
+        parent_id=0,
+    )
+
+    with pytest.raises(fastapi.HTTPException) as e:
+        await application.web.controllers.activity_create(postgres, activity)
+
+    assert e.value.status_code == 400
+
+
 async def test_get_activity_by_id(postgres, activity_food):
     fetched_activity = await application.web.controllers.activity_get_by_id(
         postgres,

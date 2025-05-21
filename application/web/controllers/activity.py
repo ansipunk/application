@@ -17,6 +17,8 @@ async def activity_create(
         )
     except models.ActivityNestingLimitReached:
         raise fastapi.HTTPException(400, "Activity nesting limit reached")
+    except models.ActivityDoesNotExist:
+        raise fastapi.HTTPException(400, "Parent activity does not exist")
 
 
 async def activity_get_by_id(session: based.Session, activity_id: int):
