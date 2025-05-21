@@ -1,3 +1,7 @@
+from .models import activity
+from .models import activity_food
+from .models import activity_meat
+from .models import activity_sausages
 from .models import building
 from .models import building_minsk_a
 from .models import building_minsk_b

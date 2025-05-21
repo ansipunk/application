@@ -50,3 +50,30 @@ async def building_minsk_b(building):
         53.926340,
         27.510609,
     )
+
+
+@pytest.fixture
+def activity(postgres):
+    async def builder(name, parent_id=None):
+        return await application.models.activity_create(
+            postgres,
+            name=name,
+            parent_id=parent_id,
+        )
+
+    return builder
+
+
+@pytest.fixture
+async def activity_food(activity):
+    return await activity("Еда")
+
+
+@pytest.fixture
+async def activity_meat(activity, activity_food):
+    return await activity("Мясная продукция", activity_food["id"])
+
+
+@pytest.fixture
+async def activity_sausages(activity, activity_meat):
+    return await activity("Колбасы и сосиски", activity_meat["id"])
