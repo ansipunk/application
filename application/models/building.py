@@ -104,7 +104,7 @@ async def building_get_within_radius(
     query = Building.select().where(
         sqlalchemy.text(f"""ST_DWithin(
             location::geography,
-            ST_SetSRID(ST_GeomFromText('{location}'), 4326),
+            ST_SetSRID(ST_GeomFromText('{location}'), 4326)::geography,
             {radius_meters}
         )"""),
     )

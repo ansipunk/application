@@ -78,3 +78,26 @@ async def test_get_activity_by_id(postgres, activity_food):
 async def test_get_nonexistent_activity(postgres):
     with pytest.raises(application.models.ActivityDoesNotExist):
         await application.models.activity_get_by_id(postgres, 0)
+
+
+async def test_get_activities(
+    postgres,
+    activity_food,
+    activity_meat,
+    activity_sausages,
+    activity_vehicles,
+    activity_passenger_cars,
+    activity_parts,
+):
+    fetched_activities = await application.models.activity_get(postgres)
+    assert len(fetched_activities) == 6
+
+    for activity in [
+        activity_food,
+        activity_meat,
+        activity_sausages,
+        activity_vehicles,
+        activity_passenger_cars,
+        activity_parts,
+    ]:
+        assert activity in fetched_activities
