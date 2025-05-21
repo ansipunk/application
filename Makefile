@@ -60,7 +60,7 @@ populate: $(VENV)
 	$(PYTHON) ./scripts/populate_test_data.py
 
 serve: $(VENV)
-	APPLICATION_WEB_DEBUG=1 $(PYTHON) -m uvicorn application.web:app --reload
+	APPLICATION_WEB_DEBUG=1 $(PYTHON) -m uvicorn application.web:app --host 0.0.0.0 --reload
 
 outdated: $(VENV)
 	$(PYTHON) -m pip list --outdated
