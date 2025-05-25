@@ -24,7 +24,6 @@ Organization = sqlalchemy.Table(
     postgres.metadata,
     sqlalchemy.Column("id", sqlalchemy.Integer, primary_key=True),
     sqlalchemy.Column("name", sqlalchemy.Text, nullable=False),
-    sqlalchemy.Column("phone_number", sqlalchemy.Text, nullable=True),
     sqlalchemy.Column(
         "building_id",
         sqlalchemy.Integer,
@@ -71,13 +70,25 @@ OrganizationActivity = sqlalchemy.Table(
     sqlalchemy.PrimaryKeyConstraint("organization_id", "activity_id"),
 )
 
+OrganizationPhoneNumber = sqlalchemy.Table(
+    "organization_phone_number",
+    postgres.metadata,
+    sqlalchemy.Column(
+        "organization_id",
+        sqlalchemy.Integer,
+        sqlalchemy.ForeignKey("organization.id"),
+        nullable=False,
+    ),
+    sqlalchemy.Column("phone_number", sqlalchemy.Text, nullable=False),
+)
+
 
 async def organization_create(
     session: based.Session,
     *,
     name: str,
-    phone_number: str | None,
     building_id: int,
+    phone_numbers: list[str],
     activity_ids: list[int],
 ):
     if not activity_ids:
@@ -90,13 +101,11 @@ async def organization_create(
             Organization.insert()
             .values(
                 name=name,
-                phone_number=phone_number,
                 building_id=building_id,
             )
             .returning(
                 Organization.c.id,
                 Organization.c.name,
-                Organization.c.phone_number,
                 Organization.c.building_id,
             )
         )
@@ -106,8 +115,9 @@ async def organization_create(
         except psycopg.errors.ForeignKeyViolation as e:
             raise BuildingDoesNotExist from e
 
-        # De-duplicate activities
+        # De-duplicate activities and phone numbers
         activity_ids = set(activity_ids)
+        phone_numbers = set(phone_numbers)
 
         organization_activity_rows = []
         for activity_id in activity_ids:
@@ -125,7 +135,22 @@ async def organization_create(
         except psycopg.errors.ForeignKeyViolation as e:
             raise ActivityDoesNotExist from e
 
+        organization_phone_number_rows = []
+        for phone_number in phone_numbers:
+            organization_phone_number_rows.append(
+                {
+                    "organization_id": organization["id"],
+                    "phone_number": phone_number,
+                },
+            )
+
+        query = OrganizationPhoneNumber.insert().values(
+            organization_phone_number_rows,
+        )
+        await session.execute(query)
+
         organization["activity_ids"] = list(activity_ids)
+        organization["phone_numbers"] = list(phone_numbers)
         return organization
 
 
@@ -135,14 +160,23 @@ def _get_organization_query():
         .with_only_columns(
             Organization.c.id,
             Organization.c.name,
-            Organization.c.phone_number,
             Organization.c.building_id,
             sqlalchemy.dialects.postgresql.array_agg(
-                OrganizationActivity.c.activity_id,
-            ).label("activity_ids"),
+                sqlalchemy.distinct(OrganizationActivity.c.activity_id),
+            )
+            .filter(OrganizationActivity.c.activity_id.isnot(None))
+            .label("activity_ids"),
+            sqlalchemy.dialects.postgresql.array_agg(
+                sqlalchemy.distinct(OrganizationPhoneNumber.c.phone_number),
+            )
+            .filter(OrganizationPhoneNumber.c.phone_number.isnot(None))
+            .label("phone_numbers"),
         )
         .select_from(
             Organization.join(
+                OrganizationPhoneNumber,
+                Organization.c.id == OrganizationPhoneNumber.c.organization_id,
+            ).join(
                 OrganizationActivity,
                 Organization.c.id == OrganizationActivity.c.organization_id,
             ),
@@ -196,6 +230,7 @@ async def organization_get_by_nested_activities(
     p1 = sqlalchemy.alias(Activity, name="p1")
     p2 = sqlalchemy.alias(Activity, name="p2")
     oa = OrganizationActivity.alias("oa")
+    on = OrganizationPhoneNumber.alias("on")
     o = Organization.alias("o")
 
     # First of all, we need to find all the activities that
@@ -228,10 +263,19 @@ async def organization_get_by_nested_activities(
         sqlalchemy.select(
             o.c.id,
             o.c.name,
-            o.c.phone_number,
             o.c.building_id,
-            sqlalchemy.func.array_agg(oa.c.activity_id).label("activity_ids"),
+            sqlalchemy.dialects.postgresql.array_agg(
+                sqlalchemy.distinct(oa.c.activity_id),
+            )
+            .filter(oa.c.activity_id.isnot(None))
+            .label("activity_ids"),
+            sqlalchemy.dialects.postgresql.array_agg(
+                sqlalchemy.distinct(on.c.phone_number),
+            )
+            .filter(on.c.phone_number.isnot(None))
+            .label("phone_numbers"),
         )
+        .join(on, o.c.id == on.c.organization_id)
         .join(oa, o.c.id == oa.c.organization_id)
         .join(matching_org_ids, matching_org_ids.c.organization_id == o.c.id)
         .group_by(o.c.id, o.c.name)
@@ -250,6 +294,7 @@ async def organization_get_within_radius(
     b = Building.alias("b")
     o = Organization.alias("o")
     oa = OrganizationActivity.alias("oa")
+    on = OrganizationPhoneNumber.alias("on")
 
     point = shapely.Point(longitude, latitude).wkt
 
@@ -257,11 +302,20 @@ async def organization_get_within_radius(
         sqlalchemy.select(
             o.c.id,
             o.c.name,
-            o.c.phone_number,
             o.c.building_id,
-            sqlalchemy.func.array_agg(oa.c.activity_id).label("activity_ids"),
+            sqlalchemy.dialects.postgresql.array_agg(
+                sqlalchemy.distinct(oa.c.activity_id),
+            )
+            .filter(oa.c.activity_id.isnot(None))
+            .label("activity_ids"),
+            sqlalchemy.dialects.postgresql.array_agg(
+                sqlalchemy.distinct(on.c.phone_number),
+            )
+            .filter(on.c.phone_number.isnot(None))
+            .label("phone_numbers"),
         )
         .join(b, o.c.building_id == b.c.id)
+        .join(on, o.c.id == on.c.organization_id)
         .join(oa, o.c.id == oa.c.organization_id)
         .where(
             sqlalchemy.text(
@@ -279,6 +333,7 @@ async def organization_get_within_radius(
 async def organization_search(session: based.Session, search_text: str):
     o = Organization.alias("o")
     oa = OrganizationActivity.alias("oa")
+    on = OrganizationPhoneNumber.alias("on")
 
     ts_query = sqlalchemy.func.plainto_tsquery(
         sqlalchemy.text("'russian'"),
@@ -291,13 +346,22 @@ async def organization_search(session: based.Session, search_text: str):
         sqlalchemy.select(
             o.c.id,
             o.c.name,
-            o.c.phone_number,
             o.c.building_id,
-            sqlalchemy.func.array_agg(oa.c.activity_id).label("activity_ids"),
+            sqlalchemy.dialects.postgresql.array_agg(
+                sqlalchemy.distinct(oa.c.activity_id),
+            )
+            .filter(oa.c.activity_id.isnot(None))
+            .label("activity_ids"),
+            sqlalchemy.dialects.postgresql.array_agg(
+                sqlalchemy.distinct(on.c.phone_number),
+            )
+            .filter(on.c.phone_number.isnot(None))
+            .label("phone_numbers"),
             rank.label("rank"),
             similarity_score.label("similarity"),
         )
-        .join(oa, oa.c.organization_id == o.c.id, isouter=True)
+        .join(on, o.c.id == on.c.organization_id)
+        .join(oa, oa.c.organization_id == o.c.id)
         .where((o.c.name_fts.op("@@")(ts_query)) | (similarity_score > 0.3))
         .group_by(o.c.id, o.c.name)
         .order_by(
@@ -315,7 +379,12 @@ async def organization_search(session: based.Session, search_text: str):
 
 async def organization_delete(session: based.Session, organization_id: int):
     query = OrganizationActivity.delete().where(
-        Organization.c.id == organization_id,
+        OrganizationActivity.c.organization_id == organization_id,
+    )
+    await session.execute(query)
+
+    query = OrganizationPhoneNumber.delete().where(
+        OrganizationPhoneNumber.c.organization_id == organization_id,
     )
     await session.execute(query)
 

@@ -6,7 +6,7 @@ async def test_create_organization(
     name = "Name"
     building_id = building_moscow_a["id"]
     activity_ids = [activity_food["id"]]
-    phone_number = "+7 999 666 8888"
+    phone_numbers = ["+7 999 666 8888"]
 
     resp = api_client.post(
         "/api/organizations/",
@@ -14,7 +14,7 @@ async def test_create_organization(
             "name": name,
             "building_id": building_id,
             "activity_ids": activity_ids,
-            "phone_number": phone_number,
+            "phone_numbers": phone_numbers,
         },
     )
 
@@ -23,7 +23,7 @@ async def test_create_organization(
     created_organization = resp.json()
     assert created_organization["id"] is not None
     assert created_organization["name"] == name
-    assert created_organization["phone_number"] == phone_number
+    assert created_organization["phone_numbers"] == phone_numbers
     assert created_organization["building_id"] == building_id
     assert created_organization["activity_ids"] == activity_ids
 
@@ -35,7 +35,7 @@ async def test_create_organization_with_nonexistent_building_id(
     name = "Name"
     building_id = 0
     activity_ids = [activity_food["id"]]
-    phone_number = "+7 999 666 8888"
+    phone_numbers = ["+7 999 666 8888"]
 
     resp = api_client.post(
         "/api/organizations/",
@@ -43,7 +43,7 @@ async def test_create_organization_with_nonexistent_building_id(
             "name": name,
             "building_id": building_id,
             "activity_ids": activity_ids,
-            "phone_number": phone_number,
+            "phone_numbers": phone_numbers,
         },
     )
 
@@ -57,7 +57,7 @@ async def test_create_organization_with_nonexistent_activity_id(
     name = "Name"
     building_id = building_moscow_a["id"]
     activity_ids = [0]
-    phone_number = "+7 999 666 8888"
+    phone_numbers = ["+7 999 666 8888"]
 
     resp = api_client.post(
         "/api/organizations/",
@@ -65,7 +65,7 @@ async def test_create_organization_with_nonexistent_activity_id(
             "name": name,
             "building_id": building_id,
             "activity_ids": activity_ids,
-            "phone_number": phone_number,
+            "phone_numbers": phone_numbers,
         },
     )
 
@@ -79,7 +79,7 @@ async def test_create_organization_with_no_activity_ids(
     name = "Name"
     building_id = building_moscow_a["id"]
     activity_ids = []
-    phone_number = "+7 999 666 8888"
+    phone_numbers = ["+7 999 666 8888"]
 
     resp = api_client.post(
         "/api/organizations/",
@@ -87,7 +87,7 @@ async def test_create_organization_with_no_activity_ids(
             "name": name,
             "building_id": building_id,
             "activity_ids": activity_ids,
-            "phone_number": phone_number,
+            "phone_numbers": phone_numbers,
         },
     )
 

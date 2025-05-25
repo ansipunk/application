@@ -127,15 +127,25 @@ def main():
             activity_parts = cursor.fetchone()
 
             cursor.execute(f"""
-                INSERT INTO organization (name, phone_number, building_id)
+                INSERT INTO organization (name, building_id)
                 VALUES (
                     'Только говядина',
-                    '8 800 555 3535',
                     {building_moscow_a[0]}
                 )
                 RETURNING id;
             """)
             organization_moscow_a_meat = cursor.fetchone()
+
+            cursor.execute(f"""
+                INSERT INTO organization_phone_number (
+                    organization_id,
+                    phone_number
+                )
+                VALUES (
+                    {organization_moscow_a_meat[0]},
+                    '8 800 555 3535'
+                )
+            """)
 
             cursor.execute(f"""
                 INSERT INTO organization_activity (organization_id, activity_id)
@@ -146,15 +156,25 @@ def main():
             """)
 
             cursor.execute(f"""
-                INSERT INTO organization (name, phone_number, building_id)
+                INSERT INTO organization (name, building_id)
                 VALUES (
                     'Шаурма и аккумуляторы',
-                    '+7 915 111 2233',
                     {building_moscow_b[0]}
                 )
                 RETURNING id;
             """)
             organization_moscow_b_sausages_parts = cursor.fetchone()
+
+            cursor.execute(f"""
+                INSERT INTO organization_phone_number (
+                    organization_id,
+                    phone_number
+                )
+                VALUES (
+                    {organization_moscow_b_sausages_parts[0]},
+                    '+7 915 111 2233'
+                )
+            """)
 
             cursor.execute(f"""
                 INSERT INTO organization_activity (organization_id, activity_id)
@@ -172,15 +192,25 @@ def main():
             """)
 
             cursor.execute(f"""
-                INSERT INTO organization (name, phone_number, building_id)
+                INSERT INTO organization (name, building_id)
                 VALUES (
                     'Автосалон',
-                    '+375 44 123 4567',
                     {building_minsk_a[0]}
                 )
                 RETURNING id;
             """)
             organization_minsk_a_passenger_cars = cursor.fetchone()
+
+            cursor.execute(f"""
+                INSERT INTO organization_phone_number (
+                    organization_id,
+                    phone_number
+                )
+                VALUES (
+                    {organization_minsk_a_passenger_cars[0]},
+                    '+375 44 123 4567'
+                )
+            """)
 
             cursor.execute(f"""
                 INSERT INTO organization_activity (organization_id, activity_id)
@@ -191,15 +221,25 @@ def main():
             """)
 
             cursor.execute(f"""
-                INSERT INTO organization (name, phone_number, building_id)
+                INSERT INTO organization (name, building_id)
                 VALUES (
                     'Автобусы',
-                    '+375 33 420 1337',
                     {building_minsk_b[0]}
                 )
                 RETURNING id;
             """)
             organization_minsk_b_buses = cursor.fetchone()
+
+            cursor.execute(f"""
+                INSERT INTO organization_phone_number (
+                    organization_id,
+                    phone_number
+                )
+                VALUES (
+                    {organization_minsk_b_buses[0]},
+                    '+375 33 420 1337'
+                )
+            """)
 
             cursor.execute(f"""
                 INSERT INTO organization_activity (organization_id, activity_id)

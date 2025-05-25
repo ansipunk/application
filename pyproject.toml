@@ -16,18 +16,19 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = [
-  "SQLAlchemy-Utils==0.41.2",
   "httpx==0.28.1",
+  "pytest==8.3.5",
   "pytest-asyncio==0.26.0",
   "pytest-cov==6.1.1",
   "pytest-mock==3.14.0",
+  "pytest-retry==1.7.0",
   "pytest-xdist==3.6.1",
-  "pytest==8.3.5",
   "ruff==0.11.10",
+  "SQLAlchemy-Utils==0.41.2",
 ]
 
 [tool.pytest.ini_options]
-addopts = ["-n 4"]
+addopts = ["-n", "4", "--retries", "2"]
 testpaths = ["tests"]
 asyncio_mode = "auto"
 asyncio_default_fixture_loop_scope = "function"
